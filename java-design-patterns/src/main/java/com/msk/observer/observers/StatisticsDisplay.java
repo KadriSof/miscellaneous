@@ -31,14 +31,17 @@ public class StatisticsDisplay implements Observer, DisplayElement {
     @Override
     public void update() {
         float temperature = weatherData.getTemperature();
+
         if (temperature < minTemperature) {
             minTemperature = temperature;
         }
         if (temperature > maxTemperature) {
             maxTemperature = temperature;
         }
+
         avgTemperature = ((avgTemperature * numMeasurements) + temperature) / (numMeasurements + 1);
         numMeasurements++;
+
         display();
     }
 }
