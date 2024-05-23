@@ -13,6 +13,7 @@ public class StarbuzzCoffee {
 
         // Order up an espresso, no condiments, and print its description and cost.
         Beverage beverage = new Espresso();
+        beverage.setSize(Beverage.Size.GRANDE);
         System.out.println(beverage.getDescription() + " $" + beverage.cost());
 
         // Make a Dark Roast object.
@@ -27,6 +28,7 @@ public class StarbuzzCoffee {
 
         // And a House Blend with Soy, Mocha, and Whip.
         Beverage beverage3 = new HouseBlend();
+        beverage3.setSize(Beverage.Size.VENTI);
         beverage3 = new Soy(beverage3);
         beverage3 = new Mocha(beverage3);
         beverage3 = new Whip(beverage3);
