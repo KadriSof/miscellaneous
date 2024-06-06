@@ -26,3 +26,9 @@ public abstract class PizzaStore {
     // Abstract factory method.
     protected abstract Pizza createPizza(String type);
 }
+
+/*
+    The Abstract Factory Pattern provides an interface for creating
+    families of related or dependent objects without specifying their
+    concrete classes.
+ */

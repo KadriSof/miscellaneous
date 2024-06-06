@@ -1,5 +1,20 @@
 package com.msk.factory.products;
 
-public abstract class VeggiePizza extends Pizza {
+import com.msk.factory.ingredients.PizzaIngredientFactory;
 
+public class VeggiePizza extends Pizza {
+    PizzaIngredientFactory ingredientFactory;
+
+    public VeggiePizza(PizzaIngredientFactory ingredientFactory) {
+        this.ingredientFactory = ingredientFactory;
+    }
+
+    @Override
+    public void prepare() {
+        System.out.println("Preparing " + this.name);
+        dough = ingredientFactory.createDough();
+        sauce = ingredientFactory.createSauce();
+        cheese = ingredientFactory.createCheese();
+        veggies = ingredientFactory.createVeggies();
+    }
 }
