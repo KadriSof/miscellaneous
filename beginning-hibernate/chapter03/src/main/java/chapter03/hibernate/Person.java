@@ -7,7 +7,7 @@ import java.util.Objects;
 public class Person {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(unique = true)
@@ -39,7 +39,7 @@ public class Person {
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (!(obj instanceof chapter03.simple.Person)) return false;
+        if (!(obj instanceof Person)) return false;
         Person person = (Person) obj;
         return Objects.equals(getId(), person.getId())
                 && Objects.equals(getName(), person.getName());

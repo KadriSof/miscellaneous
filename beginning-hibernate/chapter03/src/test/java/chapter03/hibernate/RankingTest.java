@@ -7,6 +7,7 @@ import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.query.Query;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -30,6 +31,12 @@ public class RankingTest {
                 .buildSessionFactory();
     }
 
+    @AfterMethod
+    public void shutdown() {
+        sessionFactory.close();
+    }
+
+    //tag::testSaveRanking[]
     @Test
     public void testSaveRanking() {
         try (Session session = sessionFactory.openSession()) {
@@ -50,9 +57,11 @@ public class RankingTest {
             tx.commit();
         }
     }
+    //end::testSaveRanking[]
 
+    //tag:testRankings[]
     @Test
-    public void testRanking() {
+    public void testRankings() {
         populateRankingData();
 
         try (Session session = sessionFactory.openSession()) {
@@ -82,7 +91,9 @@ public class RankingTest {
             assertEquals(average, 7);
         }
     }
+    //end::testRankings[]
 
+    //tag::changeRanking[]
     @Test
     public void changeRanking() {
         populateRankingData();
@@ -113,7 +124,40 @@ public class RankingTest {
         // Now calculate verify if the average is 8 ((7 + 8 + 9) / 3).
         assertEquals(getAverage("Clark Kent", "Java"), 8);
     }
+    //end::changeRanking[]
 
+    //tag::removeRanking[]
+    @Test
+    public void removeRanking() {
+        populateRankingData();
+        try (Session session = sessionFactory.openSession()) {
+            Transaction tx = session.beginTransaction();
+            Ranking ranking = findRanking(session, "Clark Kent", "Bruce Wayne", "Java");
+            assertNotNull(ranking, "Ranking not found.");
+            session.delete(ranking);
+            tx.commit();
+            assertEquals(getAverage("Clark Kent", "Java"), 7);
+        }
+    }
+    //end::removeRanking[]
+
+    //tag::findRanking[]
+    private Ranking findRanking(Session session, String subject, String observer, String skill) {
+        Query<Ranking> query = session.createQuery(
+                "from Ranking r "
+                        + "where r.subject.name = :subject and "
+                        + "r.observer.name = :observer and "
+                        + "r.skill.name = :skill", Ranking.class
+        );
+        query.setParameter("subject", subject);
+        query.setParameter("observer", observer);
+        query.setParameter("skill", skill);
+
+        return query.uniqueResult();
+    }
+    //end::findRanking[]
+
+    //tag::populateRankingData[]
     private void populateRankingData() {
         try (Session session = sessionFactory.openSession()) {
             Transaction tx = session.beginTransaction();
@@ -123,6 +167,7 @@ public class RankingTest {
             tx.commit();
         }
     }
+
 
     private void createData(Session session,
                             String subjectName,
@@ -141,11 +186,29 @@ public class RankingTest {
         ranking.setRanking(rank);
         session.save(ranking);
     }
+    //end::populateRankingData[]
 
-    private Skill saveSkill(Session session, String skill) {
-        return null;
+    private Skill findSkill(Session session, String name) {
+        Query<Skill> query = session.createQuery(
+                "from Skill s where s.name = :name", Skill.class
+        );
+        query.setParameter("name", name);
+
+        return query.uniqueResult();
     }
 
+    private Skill saveSkill(Session session, String skillName) {
+        Skill skill = findSkill(session, skillName);
+        if (skill == null) {
+            skill = new Skill();
+            skill.setName(skillName);
+            session.save(skill);
+        }
+
+        return skill;
+    }
+
+    //tag::findPerson[]
     private Person findPerson(Session session, String name) {
         Query<Person> query =
                 session.createQuery("from Person p where p.name = :name", Person.class);
@@ -153,6 +216,7 @@ public class RankingTest {
 
         return (Person) query.uniqueResult();
     }
+    //end::findPerson[]
 
     private Person savePerson(Session session, String name) {
         Person person = findPerson(session, name);
