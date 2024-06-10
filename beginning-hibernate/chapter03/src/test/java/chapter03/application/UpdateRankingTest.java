@@ -14,16 +14,15 @@ public class UpdateRankingTest {
     @Test
     public void updatingExistingRanking() {
         service.addRanking(SUPERMAN, GREENARROW, SQL, 6);
-        //assertEquals(service.getRankingFor(SUPERMAN, GREENARROW), 6);
-        System.out.println("SUPERMAN SQL RANKING:" + service.getRankingFor(SUPERMAN, GREENARROW));
+        assertEquals(service.getRankingFor(SUPERMAN, SQL), 6);
         service.updateRanking(SUPERMAN, GREENARROW, SQL, 7);
-        //assertEquals(service.getRankingFor(SUPERMAN, GREENARROW), 7);
+        assertEquals(service.getRankingFor(SUPERMAN, SQL), 7);
     }
 
     @Test
     public void updateNonExistingRanking() {
-        assertEquals(service.getRankingFor(SUPERMAN, GREENARROW), 0);
+        assertEquals(service.getRankingFor(SUPERMAN, SQL), 0);
         service.updateRanking(SUPERMAN, GREENARROW, SQL, 7);
-        assertEquals(service.getRankingFor(SUPERMAN, GREENARROW), 7);
+        assertEquals(service.getRankingFor(SUPERMAN, SQL), 7);
     }
 }

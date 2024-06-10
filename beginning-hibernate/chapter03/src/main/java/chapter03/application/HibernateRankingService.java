@@ -8,7 +8,10 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
+import java.util.HashMap;
 import java.util.IntSummaryStatistics;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class HibernateRankingService implements RankingService {
@@ -103,6 +106,93 @@ public class HibernateRankingService implements RankingService {
         query.setParameter("skill", skill);
 
         return query.uniqueResult();
+    }
+
+    @Override
+    public void removeRanking(String subject, String observer, String skill) {
+        try (Session session = SessionUtil.getSession()) {
+            Transaction tx = session.beginTransaction();
+            removeRanking(session, subject, observer, skill);
+            tx.commit();
+        }
+    }
+
+    private void removeRanking(Session session, String subject, String observer, String skill) {
+        Ranking ranking = findRanking(session, subject, observer, skill);
+        if (ranking != null) {
+            session.delete(ranking);
+        }
+    }
+
+    @Override
+    public Map<String, Integer> findRankingsFor(String subject) {
+        Map<String, Integer> results;
+        try (Session session = SessionUtil.getSession()) {
+            return findRankingsFor(session, subject);
+        }
+    }
+
+    private Map<String, Integer> findRankingsFor(Session session, String subject) {
+        Map<String, Integer> results = new HashMap<>();
+        Query<Ranking> query = session.createQuery(
+                "from Ranking r "
+                + "where r.subject.name = :name "
+                + "order by r.skill.name", Ranking.class
+        );
+        query.setParameter("name", subject);
+        List<Ranking> rankings = query.list();
+        String lastSkillName = "";
+        int sum = 0;
+        int count = 0;
+        for (Ranking r : rankings) {
+            if (!lastSkillName.equals(r.getSkill().getName())) {
+                sum = 0;
+                count = 0;
+                lastSkillName = r.getSkill().getName();
+            }
+            sum += r.getRanking();
+            count++;
+            results.put(lastSkillName, sum / count);
+        }
+
+        return results;
+    }
+
+    @Override
+    public Person findBestPersonFor(String skill) {
+        Person person = null;
+        try (Session session = SessionUtil.getSession()) {
+            Transaction tx = session.beginTransaction();
+
+            person = findBestPersonFor(session, skill);
+
+            tx.commit();
+        }
+
+        return person;
+    }
+
+    private Person findBestPersonFor(Session session, String skill) {
+        Query<Object[]> query = session.createQuery(
+                "select r.subject.name, avg(r.ranking) "
+                + "from Ranking r where r.skill.name = :skill "
+                + "group by r.subject.name "
+                + "order by avg(r.ranking) desc",
+                Object[].class
+        );
+        query.setParameter("skill", skill);
+        query.setMaxResults(1);
+        List<Object[]> result = query.list();
+
+        if (!result.isEmpty()) {
+            // we want the first (and only) row.
+            Object[] row = result.get(0);
+            String personName = row[0].toString();
+
+            return findPerson(session, personName);
+        }
+
+        return null;
     }
 
     private Person savePerson(Session session, String name) {
