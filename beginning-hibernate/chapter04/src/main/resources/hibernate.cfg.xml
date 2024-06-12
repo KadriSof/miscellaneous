@@ -22,5 +22,7 @@
         <mapping class="chapter04.mapped.Email"/>
         <mapping class="chapter04.mapped.Message"/>
         <mapping class="chapter04.model.SimpleObject"/>
+        <mapping class="chapter04.orphan.Library"/>
+        <mapping class="chapter04.orphan.Book"/>
     </session-factory>
 </hibernate-configuration>
